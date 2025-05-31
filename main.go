@@ -111,7 +111,7 @@ func handleConnection(conn net.Conn, aof *AOF) {
 			continue
 		}
 
-		if command == "SET" || command == "HSET" {
+		if command == "SET" || command == "HSET" || command == "DEL" {
 			err := aof.Write(val)
 			if err != nil {
 				log.Println("ERR can not write to AOF, changes will be lost after server restart:", err)

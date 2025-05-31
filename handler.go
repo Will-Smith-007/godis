@@ -9,6 +9,7 @@ var Handlers = map[string]func([]Value) Value{
 	"HSET":    hset,
 	"HGET":    hget,
 	"HGETALL": hgetall,
+	"DEL":     del,
 }
 
 var SETs = map[string]string{}
@@ -114,6 +115,38 @@ func hgetall(args []Value) Value {
 	return Value{
 		typ:   "array",
 		array: result,
+	}
+}
+
+// del deletes the specified keys from the in-memory store and returns the number of keys that were successfully removed.
+func del(args []Value) Value {
+	if len(args) < 1 {
+		return Value{
+			typ: "error",
+			str: "ERR wrong number of arguments for 'del' command",
+		}
+	}
+
+	deleted := 0
+	for i := 0; i < len(args); i++ {
+		key := args[i].bulk
+		if _, ok := SETs[key]; ok {
+			SETsMutex.Lock()
+			delete(SETs, key)
+			SETsMutex.Unlock()
+			deleted++
+		}
+		if _, ok := HSETs[key]; ok {
+			HSETsMutex.Lock()
+			delete(HSETs, key)
+			HSETsMutex.Unlock()
+			deleted++
+		}
+	}
+
+	return Value{
+		typ: "integer",
+		num: deleted,
 	}
 }
 
