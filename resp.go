@@ -174,6 +174,8 @@ func (value Value) Marshal() []byte {
 		return value.marshalBulk()
 	case "string":
 		return value.marshalString()
+	case "integer":
+		return value.marshalInteger()
 	case "null":
 		return value.marshalNull()
 	case "error":
@@ -202,6 +204,17 @@ func (value Value) marshalBulk() []byte {
 	bytes = append(bytes, strconv.Itoa(len(value.bulk))...)
 	bytes = append(bytes, '\r', '\n')
 	bytes = append(bytes, value.bulk...)
+	bytes = append(bytes, '\r', '\n')
+
+	return bytes
+}
+
+// marshalInteger converts the `Value` instance with type "integer" into a RESP byte-encoded format for transmission.
+func (value Value) marshalInteger() []byte {
+	var bytes []byte
+
+	bytes = append(bytes, INTEGER)
+	bytes = append(bytes, strconv.Itoa(value.num)...)
 	bytes = append(bytes, '\r', '\n')
 
 	return bytes
